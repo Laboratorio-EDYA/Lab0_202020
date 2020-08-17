@@ -31,18 +31,10 @@ import sys
 import csv
 from time import process_time 
 
-def topVoted(catalog, parameter):
-    top_voted = []
-    for i in range(len(catalog)):
-        if float(catalog[i]['vote_average']) >= parameter:
-            top_voted.append({catalog[i]['\ufeffid']:float(catalog[i]['vote_average'])})
-        i += 1
-    return top_voted
-
 def moviesByDirector(directorname, catalog):
     movies = []
     for i in range(len(catalog)):
-        if catalog[i]['director_name'] == directorname:
+        if catalog[i]['director_name'].lower() == directorname.lower():
             movies.append(catalog[i]['id'])
     return movies
 
