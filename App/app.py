@@ -104,8 +104,6 @@ def countElementsFilteredByColumn(criteria,column, lst):
         t1_start = process_time() #tiempo inicial
         counter=0 #Cantidad de repeticiones
         for element in lst:
-            print(element)
-            print(element[column])
             if criteria.lower() in element[column].lower(): #filtrar por palabra clave 
                 counter+=1
         t1_stop = process_time() #tiempo final
@@ -165,14 +163,13 @@ def main():
     Args: None
     Return: None 
     """
-    lista = [] #instanciar una lista vacia
     while True:
         printMenu() #imprimir el menu de opciones en consola
         inputs =input('Seleccione una opción para continuar\n') #leer opción ingresada
         if len(inputs)>0:
             if int(inputs[0])==1: #opcion 1
                 file = input('Digite la direccion del archivo a cargar: ')
-                lista = loadCSVFile(file,lista) #llamar funcion cargar datos
+                lista = loadCSVFile(file) #llamar funcion cargar datos
                 print("Datos cargados, "+str(len(lista))+" elementos cargados")
             elif int(inputs[0])==2: #opcion 2
                 if len(lista)==0: #obtener la longitud de la lista
