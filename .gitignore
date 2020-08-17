@@ -7,3 +7,4 @@ __pycache__/
 .csv
 .zip
 .vscode/settings.json
+App/app.py
