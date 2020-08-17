@@ -31,7 +31,22 @@ import sys
 import csv
 from time import process_time 
 
-def loadCSVFile (file, lst, sep=";"):
+def topVoted(catalog, parameter):
+    top_voted = []
+    for i in range(len(catalog)):
+        if float(catalog[i]['vote_average']) >= parameter:
+            top_voted.append({catalog[i]['\ufeffid']:float(catalog[i]['vote_average'])})
+        i += 1
+    return top_voted
+
+def moviesByDirector(directorname, catalog):
+    movies = []
+    for i in range(len(catalog)):
+        if catalog[i]['director_name'] == directorname:
+            movies.append(catalog[i]['id'])
+    return movies
+
+def loadCSVFile(file, sep=";"):
     """
     Carga un archivo csv a una lista
     Args:
@@ -46,9 +61,10 @@ def loadCSVFile (file, lst, sep=";"):
         Borra la lista e informa al usuario
     Returns: None   
     """
+    lst = []
     del lst[:]
     print("Cargando archivo ....")
-    t1_start = process_time() #tiempo inicial
+    """t1_start = process_time() #tiempo inicial"""
     dialect = csv.excel()
     dialect.delimiter=sep
     try:
@@ -59,9 +75,10 @@ def loadCSVFile (file, lst, sep=";"):
     except:
         del lst[:]
         print("Se presento un error en la carga del archivo")
+    """t1_stop = process_time() #tiempo final"""
+    """print("Tiempo de ejecución ",t1_stop-t1_start," segundos")"""
+    return lst
     
-    t1_stop = process_time() #tiempo final
-    print("Tiempo de ejecución ",t1_stop-t1_start," segundos")
 
 def printMenu():
     """
@@ -71,10 +88,10 @@ def printMenu():
     print("1- Cargar Datos")
     print("2- Contar los elementos de la Lista")
     print("3- Contar elementos filtrados por palabra clave")
-    print("4- Consultar elementos a partir de dos listas")
+    print("4- Consultar buenas peliculas segun director")
     print("0- Salir")
 
-def countElementsFilteredByColumn(criteria, column, lst):
+def countElementsFilteredByColumn(criteria,column, lst):
     """
     Retorna cuantos elementos coinciden con un criterio para una columna dada  
     Args:
@@ -95,17 +112,57 @@ def countElementsFilteredByColumn(criteria, column, lst):
         t1_start = process_time() #tiempo inicial
         counter=0 #Cantidad de repeticiones
         for element in lst:
+            print(element)
+            print(element[column])
             if criteria.lower() in element[column].lower(): #filtrar por palabra clave 
                 counter+=1
         t1_stop = process_time() #tiempo final
         print("Tiempo de ejecución ",t1_stop-t1_start," segundos")
     return counter
 
-def countElementsByCriteria(criteria, column, lst):
-    """
-    Retorna la cantidad de elementos que cumplen con un criterio para una columna dada
-    """
-    return 0
+def countElementsByCriteria(nombredirector,direc1,direc2,id): 
+    t1_start = process_time() #tiempo inicial 
+    movies_casting = loadCSVFile(direc1)
+    movies_details = loadCSVFile(direc2)
+    movies = moviesByDirector(nombredirector,movies_casting)
+    iguales = []
+    for i in range(len(movies_details)):
+        for x in movies:
+            if movies_details[i][id] == x:
+                if float(movies_details[i]['vote_average']) >= 6.0:
+                    iguales.append(movies_details[i]['vote_average'])
+    cantidad = len(iguales)
+    average = 0.0
+    for i in iguales:
+        average += float(i)
+    average = average/cantidad
+    t1_stop = process_time() #tiempo final
+    print("Tiempo de ejecución ",t1_stop-t1_start," segundos")
+    return (cantidad,average)
+
+def menuReq1():
+    print('1. Probar con archivos grandes')
+    print('2. Probar con archivos pequeños')
+    opcion = input('Digite su opcion: ')
+    return opcion
+
+def opcionesReq1():
+    opcion = menuReq1()
+    continuar = True
+    while continuar == True:
+        if opcion == '1':
+            direc1 = 'Data/themoviesdb/AllMoviesCastingRaw.csv'
+            direc2 = 'Data/themoviesdb/AllMoviesDetailsCleaned.csv'
+            id = '\ufeffid'
+            continuar = False 
+        elif opcion == '2':
+            direc1 = 'Data/themoviesdb/MoviesCastingRaw-small.csv'
+            direc2 = 'Data/themoviesdb/SmallMoviesDetailsCleaned.csv'
+            id = 'id'
+            continuar = False
+        else:
+            opcion = input('Opcion errada, digite nuevamente su opcion: ')
+    return (direc1, direc2, id)
 
 
 def main():
@@ -122,20 +179,23 @@ def main():
         inputs =input('Seleccione una opción para continuar\n') #leer opción ingresada
         if len(inputs)>0:
             if int(inputs[0])==1: #opcion 1
-                loadCSVFile("Data/test.csv", lista) #llamar funcion cargar datos
+                file = input('Digite la direccion del archivo a cargar: ')
+                lista = loadCSVFile(file,lista) #llamar funcion cargar datos
                 print("Datos cargados, "+str(len(lista))+" elementos cargados")
             elif int(inputs[0])==2: #opcion 2
                 if len(lista)==0: #obtener la longitud de la lista
                     print("La lista esta vacía")    
                 else: print("La lista tiene "+str(len(lista))+" elementos")
             elif int(inputs[0])==3: #opcion 3
+                column = input('Ingrese la columna en la que quiere buscar: ')
                 criteria =input('Ingrese el criterio de búsqueda\n')
-                counter=countElementsFilteredByColumn(criteria, "nombre", lista) #filtrar una columna por criterio  
+                counter=countElementsFilteredByColumn(criteria,column, lista) #filtrar una columna por criterio  
                 print("Coinciden ",counter," elementos con el crtierio: ", criteria  )
             elif int(inputs[0])==4: #opcion 4
-                criteria =input('Ingrese el criterio de búsqueda\n')
-                counter=countElementsByCriteria(criteria,0,lista)
-                print("Coinciden ",counter," elementos con el crtierio: '", criteria ,"' (en construcción ...)")
+                criteria =input('Ingrese el nombre del director\n')
+                datos = opcionesReq1()
+                counter=countElementsByCriteria(criteria, datos[0],datos[1], datos[2])
+                print("Coinciden ",counter[0]," elementos con el director: '", criteria ,"' con un promedio de votacion de", round(counter[1],2))
             elif int(inputs[0])==0: #opcion 0, salir
                 sys.exit(0)
 
