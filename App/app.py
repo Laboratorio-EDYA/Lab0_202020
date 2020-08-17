@@ -154,7 +154,6 @@ def opcionesReq1():
             opcion = input('Opcion errada, digite nuevamente su opcion: ')
     return (direc1, direc2, id)
 
-
 def main():
     """
     Método principal del programa, se encarga de manejar todos los metodos adicionales creados
